@@ -866,28 +866,9 @@ function addMsg(who,text,instant){
     if(who==='f')suggestChips();
     return;
   }
-  // Typewriter for figure responses
-  d.innerHTML='<div class="ma">'+av+'</div><div><div class="mb"></div></div>';
-  m.appendChild(d);m.scrollTop=m.scrollHeight;
-  var mb=d.querySelector('.mb');
-  var plainText=text.replace(/<[^>]*>/g,'');
-  var escapedText=esc(plainText).replace(/\n/g,'<br>');
-  var finalHtml=text.replace(/\n/g,'<br>');
-  var i=0;
-  var speed=text.length>100?25:35;
-  (function typeChar(){
-    if(i<escapedText.length){
-      mb.innerHTML=escapedText.substring(0,i+1)+'<span class="ty-cursor"></span>';
-      i++;m.scrollTop=m.scrollHeight;
-      setTimeout(typeChar,speed);
-    }else{
-      mb.innerHTML=finalHtml;
-      var mt=document.createElement('div');mt.className='mt';mt.textContent=timeStr;
-      d.querySelector('div>div').appendChild(mt);
-      m.scrollTop=m.scrollHeight;
-      suggestChips();
-    }
-  })();
+  // Figure response: use addMsgFigure directly (reliable)
+  addMsgFigure(text);
+  suggestChips();
 }
 
 // Enhanced getReply with context memory
