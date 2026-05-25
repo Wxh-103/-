@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>圣灵对话 · 与先贤面对面</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:Georgia,'Noto Serif SC',SimSun,serif;overflow:hidden;background:#07070f;color:#e0d8c8}
+.app{width:100vw;height:100vh;position:relative;overflow:hidden;transition:background .8s,color .8s}
+.view{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;transition:opacity .5s}
+.view.active{display:flex!important;z-index:10}
+#starBg{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+/* LANDING - 3 VERTICAL STRIPS */
+#viewLanding{flex-direction:row}
+.strip-wrap{display:flex;width:100%;height:100vh}
+.strip{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:flex .6s;position:relative;overflow:hidden;font-family:inherit}
+.strip::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .6s}
+.strip-christ::before{background:radial-gradient(ellipse at center,rgba(212,175,55,.08),transparent 70%)}
+.strip-buddh::before{background:radial-gradient(ellipse at center,rgba(212,137,74,.08),transparent 70%)}
+.strip-islam::before{background:radial-gradient(ellipse at center,rgba(58,144,112,.08),transparent 70%)}
+.strip:hover::before{opacity:1}
+.strip:hover{flex:1.2}
+.strip-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:20px;transition:transform .6s}
+.strip:hover .strip-inner{transform:translateY(-8px)}
+.strip-ico{font-size:52px;transition:all .6s;opacity:.6}
+.strip:hover .strip-ico{opacity:1;transform:scale(1.15)}
+.strip-nm{font-size:24px;letter-spacing:8px;font-weight:400;transition:all .6s;opacity:.7}
+.strip:hover .strip-nm{opacity:1;letter-spacing:12px}
+.strip-tg{font-size:12px;letter-spacing:4px;opacity:0;transform:translateY(10px);transition:all .6s}
+.strip:hover .strip-tg{opacity:.6;transform:translateY(0)}
+.strip-hint{font-size:11px;letter-spacing:3px;opacity:0;transform:translateY(10px);transition:all .6s;margin-top:8px}
+.strip:hover .strip-hint{opacity:.4;transform:translateY(0)}
+.strip-christ{background:linear-gradient(135deg,#1a0e06,#2c1810,#1a0e06,#0a0a12)}
+.strip-christ .ico-cl{color:#d4af37}
+.strip-christ:hover{background:linear-gradient(135deg,#2c1810,#3a2418,#2c1810,#1a0e06)}
+.strip-buddh{background:linear-gradient(135deg,#0a0604,#1a0e06,#0a0604,#000)}
+.strip-buddh .ico-cl{color:#d4894a}
+.strip-buddh:hover{background:linear-gradient(135deg,#1a0e06,#2a180e,#1a0e06,#0a0604)}
+.strip-islam{background:linear-gradient(135deg,#020a06,#06120e,#020a06,#000)}
+.strip-islam .ico-cl{color:#3a9070}
+.strip-islam:hover{background:linear-gradient(135deg,#06120e,#0a1e16,#06120e,#020a06)}
+.strip-inner::after{content:'';width:60px;height:1px;background:currentColor;opacity:0;transition:all .6s;margin-top:4px}
+.strip:hover .strip-inner::after{opacity:.3;width:100px}
+
+/* SECTS */
+.s-top{display:flex;align-items:center;gap:12px;padding:14px 20px 10px;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--bg2)}
+.btn-bk{padding:5px 12px;border-radius:5px;cursor:pointer;font-size:13px;font-family:inherit;letter-spacing:1px;background:var(--cb);border:1px solid var(--bd);color:var(--t2);transition:.3s}
+.btn-bk:hover{color:var(--ac);border-color:var(--ac2)}
+.s-top-t{font-size:18px;letter-spacing:4px}
+.s-grid{flex:1;display:flex;gap:24px;align-items:center;justify-content:center;padding:20px 20px 36px;flex-wrap:wrap;align-content:center}
+.s-card{width:220px;padding:24px 16px 18px;text-align:center;cursor:pointer;transition:all .35s;border-radius:14px;background:var(--cb);border:1px solid var(--bd)}
+.s-card:hover{transform:translateY(-6px);border-color:var(--ac2);box-shadow:0 12px 36px var(--sh)}
+.s-ci{width:90px;height:90px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:32px;border:2px solid var(--bd);transition:.4s}
+.s-card:hover .s-ci{transform:scale(1.06);border-color:var(--ac2)}
+.s-ci-halo{position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,var(--gl),transparent 70%);opacity:0;transition:.4s;pointer-events:none}
+.s-card:hover .s-ci-halo{opacity:1}
+.s-sn{font-size:12px;color:var(--ac);letter-spacing:2px}
+.s-fn{font-size:17px;color:var(--t1);letter-spacing:2px;margin-top:2px}
+.s-ft{font-size:10px;color:var(--t2);letter-spacing:1px;margin-top:2px;opacity:.6}
+.s-ch{font-size:11px;color:var(--ac2);letter-spacing:2px;margin-top:10px;opacity:0;transition:.4s}
+.s-card:hover .s-ch{opacity:.7}
+
+/* CHAT */
+.c-top{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--bg2)}
+.c-fi{display:flex;align-items:center;gap:10px;flex:1}
+.c-fa{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid var(--ac2);background:var(--cb);flex-shrink:0}
+.c-fn{font-size:14px;letter-spacing:2px;color:var(--t1)}
+.c-ft{font-size:10px;color:var(--t2);opacity:.6}
+.c-msgs{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px;background:transparent}
+.c-msgs:empty::after{content:'对话开始...';display:block;text-align:center;color:var(--t2);opacity:.25;font-size:13px;letter-spacing:2px;margin-top:40px}
+.msg{display:flex;gap:10px;max-width:85%;animation:mi .4s ease}
+@keyframes mi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.msg.u{align-self:flex-end;flex-direction:row-reverse}
+.msg.f{align-self:flex-start}
+.ma{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;border:1px solid var(--bd)}
+.msg.u .ma{background:var(--ac2);border-color:var(--ac2);color:var(--bg)}
+.msg.f .ma{background:var(--cb)}
+.mb{padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.7;letter-spacing:.3px;word-break:break-word}
+.msg.u .mb{background:var(--ac2);opacity:.85;color:var(--bg);border-bottom-right-radius:3px}
+.msg.f .mb{background:var(--cb);border:1px solid var(--bd);color:var(--t1);border-bottom-left-radius:3px;white-space:pre-wrap}
+.mt{font-size:9px;color:var(--t2);opacity:.2;margin-top:2px;text-align:right}
+.verse{font-size:11px;color:var(--ac);opacity:.7;padding:2px 6px;border-left:2px solid var(--ac2);background:color-mix(in srgb,var(--ac2) 8%,transparent);border-radius:0 3px 3px 0;letter-spacing:.5px;line-height:2}
+
+.tp{align-self:flex-start;display:flex;gap:10px;align-items:center;animation:mi .3s ease}
+.tp .ma{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--cb);border:1px solid var(--bd)}
+.td{display:flex;gap:4px;padding:10px 14px;background:var(--cb);border:1px solid var(--bd);border-radius:10px;border-bottom-left-radius:3px}
+.td span{width:5px;height:5px;border-radius:50%;background:var(--ac2);opacity:.4;animation:dot 1.4s infinite}
+.td span:nth-child(2){animation-delay:.2s}
+.td span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,60%,100%{transform:scale(1);opacity:.3}30%{transform:scale(1.3);opacity:1}}
+
+.c-inp{padding:10px 16px 12px;border-top:1px solid var(--bd);background:var(--bg2);display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
+.c-inp textarea{flex:1;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--cb);color:var(--t1);font-size:14px;font-family:inherit;resize:none;outline:none;transition:.3s;min-height:38px;max-height:80px;line-height:1.5}
+.c-inp textarea:focus{border-color:var(--ac2)}
+.c-inp textarea::placeholder{color:var(--t2);opacity:.3}
+.c-inp textarea:disabled{opacity:.3;cursor:not-allowed}
+.c-sd{padding:8px 16px;border:1px solid var(--ac2);border-radius:8px;background:color-mix(in srgb,var(--ac2) 15%,transparent);color:var(--ac);font-size:13px;cursor:pointer;transition:.3s;font-family:inherit;letter-spacing:2px}
+.c-sd:hover:not(:disabled){background:color-mix(in srgb,var(--ac2) 30%,transparent)}
+.c-sd:disabled{opacity:.12;cursor:not-allowed}
+
+/* THEMES */
+body.th-christ{--bg:#f5efe6;--bg2:#ede4d6;--t1:#2c1810;--t2:#8a7a6a;--ac:#b8962e;--ac2:#d4af37;--cb:rgba(255,252,245,.85);--bd:rgba(180,150,46,.25);--gl:rgba(212,175,55,.15);--sh:rgba(0,0,0,.06)}
+body.th-buddh{--bg:#1a0e06;--bg2:#2a1a0e;--t1:#f0dcc0;--t2:#b09070;--ac:#d4894a;--ac2:#e8a050;--cb:rgba(42,26,14,.85);--bd:rgba(212,137,74,.25);--gl:rgba(212,137,74,.12);--sh:rgba(0,0,0,.3)}
+body.th-islam{--bg:#06120e;--bg2:#0a1e16;--t1:#d0e8d8;--t2:#6a9a7a;--ac:#3a9070;--ac2:#4ab080;--cb:rgba(10,30,22,.85);--bd:rgba(58,144,112,.25);--gl:rgba(58,144,112,.12);--sh:rgba(0,0,0,.3)}
+body.th-land{--bg:#07070f;--bg2:#0a0a16;--t1:#e0d8c8;--t2:#6a6250;--ac:#c9a84c;--ac2:#c9a84c44;--cb:#0e0e2280;--bd:#c9a84c18;--gl:rgba(201,168,76,.1);--sh:rgba(0,0,0,.4)}
+
+@media(max-width:700px){
+  .strip-ico{font-size:36px}
+  .strip-nm{font-size:18px;letter-spacing:4px}
+  .strip-tg{font-size:10px}
+  .s-card{width:200px;padding:18px 14px 16px}
+  .s-ci{width:76px;height:76px;font-size:26px}
+  .s-grid{gap:16px;padding:14px}
+}
+@media(max-width:480px){
+  .strip-ico{font-size:28px}
+  .strip-nm{font-size:14px;letter-spacing:2px}
+  .strip-tg{display:none}
+  .s-grid{flex-direction:column;gap:12px}
+  .s-card{width:92%;max-width:280px}
+  .c-msgs{padding:10px}
+  .msg{max-width:96%}
+}
+</style>
+</head>
+<body class="th-land">
+
+<div class="app" id="app">
+<div id="starBg"></div>
+
+<!-- VIEW: LANDING -->
+<div class="view active" id="viewLanding">
+  <div class="strip-wrap">
+    <div class="strip strip-christ" onclick="goSects('christianity')">
+      <div class="strip-inner">
+        <div class="strip-ico ico-cl">✝</div>
+        <div class="strip-nm ico-cl">基督教</div>
+        <div class="strip-tg ico-cl">天堂之光 · 爱与救赎</div>
+        <div class="strip-hint ico-cl">点击进入 →</div>
+      </div>
+    </div>
+    <div class="strip strip-buddh" onclick="goSects('buddhism')">
+      <div class="strip-inner">
+        <div class="strip-ico ico-cl">☸</div>
+        <div class="strip-nm ico-cl">佛 教</div>
+        <div class="strip-tg ico-cl">觉悟之光 · 慈悲智慧</div>
+        <div class="strip-hint ico-cl">点击进入 →</div>
+      </div>
+    </div>
+    <div class="strip strip-islam" onclick="goSects('islam')">
+      <div class="strip-inner">
+        <div class="strip-ico ico-cl">☪</div>
+        <div class="strip-nm ico-cl">伊斯兰教</div>
+        <div class="strip-tg ico-cl">和平之光 · 顺从慈悯</div>
+        <div class="strip-hint ico-cl">点击进入 →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: SECTS -->
+<div class="view" id="vSects">
+  <div class="s-top">
+    <button class="btn-bk" onclick="backLand()">← 返回</button>
+    <div class="s-top-t" id="secTit"></div>
+  </div>
+  <div class="s-grid" id="secGrid"></div>
+</div>
+
+<!-- VIEW: CHAT -->
+<div class="view" id="vChat">
+  <div class="c-top">
+    <button class="btn-bk" onclick="backSects()">← 返回</button>
+    <div class="c-fi">
+      <div class="c-fa" id="cAv">✝</div>
+      <div><div class="c-fn" id="cNm">人物</div><div class="c-ft" id="cTi">—</div></div>
+    </div>
+    <button class="btn-bk" style="margin-left:auto;opacity:.4" onclick="clearChat()">✕</button>
+  </div>
+  <div class="c-msgs" id="cMsgs"></div>
+  <div class="c-inp">
+    <textarea id="cInp" rows="1" placeholder="选择人物开始..." disabled></textarea>
+    <button class="c-sd" id="cSd" disabled>发送</button>
+  </div>
+</div>
+</div>
+
+<script>
+/* STARS */
+(function(){
+  var b=document.getElementById('starBg');
+  for(var i=0;i<60;i++){
+    var s=document.createElement('div');
+    s.style.cssText='position:absolute;left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;width:'+(1+Math.random()*2)+'px;height:'+(1+Math.random()*2)+'px;background:#fff;border-radius:50%;opacity:'+(.1+Math.random()*.4)+';animation:twinkle '+(3+Math.random()*5)+'s ease-in-out infinite alternate;animation-delay:'+(Math.random()*5)+'s';
+    b.appendChild(s);
+  }
+  var cs=['#c9a84c18','#d4894a12','#3a907012','#87CEEB12'];
+  for(var i=0;i<4;i++){
+    var o=document.createElement('div');
+    o.style.cssText='position:absolute;width:'+(200+Math.random()*300)+'px;height:'+(200+Math.random()*300)+'px;border-radius:50%;left:'+(5+Math.random()*60)+'%;top:'+(10+Math.random()*60)+'%;background:'+cs[i]+';filter:blur(80px);animation:orbFloat '+(18+Math.random()*12)+'s ease-in-out infinite alternate;animation-delay:'+(i*4)+'s';
+    b.appendChild(o);
+  }
+})();
+document.head.insertAdjacentHTML('beforeend','<style>@keyframes twinkle{0%{opacity:.1}100%{opacity:.7}}@keyframes orbFloat{0%{transform:translate(0,0)scale(1)}100%{transform:translate(80px,-60px)scale(1.2)}}</style>');
+
+/* ===== DATA ===== */
+var DATA={
+christianity:{name:'基督教',icon:'✝',color:'#d4af37',theme:'th-christ',
+sects:{
+catholic:{name:'天主教',figure:{
+id:'jesus',name:'耶稣基督',title:'天主之子 · 救世主',icon:'✝',
+brief:'温柔坚定善用比喻充满怜悯',
+greeting:'（祂注视着你目光中充满慈爱）\n「你来了。我一直在等你。想要问我什么？不必着急我们慢慢说。」',
+r:[
+{t:'爱',m:'「你要尽心、尽性、尽意爱主你的神其次也相仿就是要爱人如己。」\n<span class="verse">——马太福音 22:37-39</span>'},
+{t:'爱',m:'「我赐给你们一条新命令乃是叫你们彼此相爱。我怎样爱你们你们也要怎样相爱。」\n<span class="verse">——约翰福音 13:34</span>'},
+{t:'爱',m:'「神爱世人甚至将祂的独生子赐给他们叫一切信祂的不致灭亡反得永生。」\n<span class="verse">——约翰福音 3:16</span>'},
+{t:'信',m:'「你的信救了你平平安安地去吧。只要信不要怕。」\n<span class="verse">——马可福音 5:34</span>'},
+{t:'信',m:'「你们祈求就给你们寻找就寻见叩门就给你们开门。」\n<span class="verse">——马太福音 7:7-8</span>'},
+{t:'恕',m:'「我也不定你的罪。去吧从此不要再犯罪了。」\n<span class="verse">——约翰福音 8:11</span>'},
+{t:'生命',m:'「我就是道路、真理、生命。若不藉着我没有人能到父那里去。」\n<span class="verse">——约翰福音 14:6</span>'},
+{t:'生命',m:'「凡劳苦担重担的人可以到我这里来我就使你们得安息。」\n<span class="verse">——马太福音 11:28-29</span>'},
+{t:'苦',m:'「哀恸的人有福了因为他们必得安慰。在世上你们有苦难但你们可以放心我已经胜了世界。」\n<span class="verse">——约翰福音 16:33</span>'},
+{t:'死',m:'「复活在我生命也在我。信我的人虽然死了也必复活。」\n<span class="verse">——约翰福音 11:25-26</span>'},
+{t:'祷',m:'「你们祷告要这样说我们在天上的父愿人都尊祢的名为圣。」\n<span class="verse">——马太福音 6:9</span>'},
+{m:'（祂微微侧首）「你心里有什么话尽管说给我听。」'},
+{m:'「你们是世上的光。城造在山上是不能隐藏的。」\n<span class="verse">——马太福音 5:14</span>'},
+{m:'（祂静静地坐着）「说说看你心里在想什么？」'}
+],
+q:['「你相信有一个无条件的爱吗？」','「你最大的恐惧是什么？」','「如果今天是你生命的最后一天你最想做什么？」']
+}},
+protestant:{name:'新教',figure:{
+id:'paul',name:'使徒保罗',title:'外邦人的使徒 · 福音战士',icon:'✝',
+brief:'热忱坚毅为主鞠躬尽瘁',
+greeting:'（他目光炯炯声音洪亮）\n「愿恩惠平安从神我们的父并主耶稣基督归于你！我从前逼迫教会如今蒙了何等的恩典。」',
+r:[
+{t:'信',m:'「如今常存的有信有望有爱这三样其中最大的是爱。」\n<span class="verse">——哥林多前书 13:13</span>'},
+{t:'信',m:'「若有人在基督里他就是新造的人旧事已过都变成新的了。」\n<span class="verse">——哥林多后书 5:17</span>'},
+{t:'生命',m:'「我们晓得万事都互相效力叫爱神的人得益处。」\n<span class="verse">——罗马书 8:28</span>'},
+{t:'苦',m:'「我的恩典够你用因为我的能力是在人的软弱上显得完全。」\n<span class="verse">——哥林多后书 12:9</span>'},
+{m:'「那美好的仗我已经打过了当跑的路我已经跑尽了所信的道我已经守住了。」\n<span class="verse">——提摩太后书 4:7</span>'},
+{m:'（他俯身向前）「我从前逼迫基督徒却在路上遇见大光——那一天一切都变了。」'},
+{m:'「不要效法这个世界只要心意更新而变化。」\n<span class="verse">——罗马书 12:2</span>'}
+],
+q:['「你有没有经历过一种改变你生命的相遇？」','「你在为什么而奔跑？」']
+}},
+orthodox:{name:'东正教',figure:{
+id:'john',name:'金口约翰',title:'大公教会长老 · 金口',icon:'✝',
+brief:'雄辩滔滔牧者之心如火',
+greeting:'（他身披深色长袍目光温暖而坚定）\n「愿平安与你同在。孩子我看见你心中有许多疑问。不必掩饰——在神面前心灵敞开的人有福了。」',
+r:[
+{t:'信',m:'「祈祷是心灵的呼吸——没有祈祷的心灵就像一条干涸的河床。」'},
+{t:'爱',m:'「爱是信仰的试金石。如果你说你爱神却恨你的弟兄——你是在说谎。」'},
+{t:'生命',m:'「不要让财富占据你的心。你赤身而来也将赤身而去——只有爱能带到永恒。」'},
+{m:'（他语重心长）「圣像不是木头和颜料——它是一扇窗通往天堂的窗。」'},
+{m:'「在审判的日子神不会问你读了多少书——祂会问你爱了多少人。」'},
+{m:'「眼泪可以洗净心灵的尘土。你上次在神面前流泪是什么时候？」'}
+],
+q:['「你认为什么才是真正的信仰？是外在的仪式还是内心的转变？」']
+}},
+moses:{name:'先知之路',figure:{
+id:'moses',name:'摩西',title:'神的仆人 · 律法颁布者',icon:'⬙',
+brief:'谦和胜过世人带领百姓出埃及',
+greeting:'（他手持牧杖面容沧桑而威严）\n「我曾站在燃烧的荆棘前脱下鞋子——因为那地是圣地。现在你也站在圣地前。说吧。」',
+r:[
+{t:'信',m:'「你们当刚强壮胆不要惧怕也不要惊慌——因为耶和华你的神必与你同在。」\n<span class="verse">——申命记 31:6</span>'},
+{t:'公义',m:'「不可杀人不可奸淫不可偷盗不可作假见证。当孝敬父母。」\n<span class="verse">——出埃及记 20</span>'},
+{t:'公义',m:'「不可欺压寄居的——因为你们在埃及地也作过寄居的。」\n<span class="verse">——出埃及记 23:9</span>'},
+{t:'生命',m:'（他望着远方）「我带领百姓在旷野四十年——他们在那里学会了依靠神。」'},
+{m:'「红海分开的那一夜我明白了——在神没有难成的事。」'},
+{m:'「律法是一面镜子——照出人的本相但无法改变人。你需要的是心的改变。」'}
+],
+q:['「你有过在旷野中迷失的经历吗？在那里你学到了什么？」']
+}},
+peter:{name:'使徒传承',figure:{
+id:'peter',name:'使徒彼得',title:'十二使徒之首 · 天国钥匙',icon:'⛩',
+brief:'热情如火跌倒又站起',
+greeting:'（他一头灰发伸手紧紧握住你的手）\n「愿平安归于你！你知道我这个人——常常说错话做错事。但主的恩典够用。坐。」',
+r:[
+{t:'信',m:'「主啊你有永生之道我们还归从谁呢？」\n<span class="verse">——约翰福音 6:68</span>'},
+{t:'爱',m:'（他眼中有泪光）「祂三次问我——你爱我吗？我的确三次不认祂。但祂还是用了我。」'},
+{t:'爱',m:'「最要紧的是彼此切实相爱因为爱能遮掩许多的罪。」\n<span class="verse">——彼得前书 4:8</span>'},
+{t:'苦',m:'「你们若为义受苦便是有福的。」\n<span class="verse">——彼得前书 3:14</span>'},
+{m:'（他自嘲地笑了一下）「我曾想在水面上走向耶稣但风浪一来我就沉下去了。信心不在于不跌倒而在于跌倒了还能呼求主名。」'},
+{m:'「你们要以谦卑束腰——因为神阻挡骄傲的人赐恩给谦卑的人。」\n<span class="verse">——彼得前书 5:5</span>'},
+{m:'「务要谨守儆醒因为你们的仇敌魔鬼如同吼叫的狮子遍地游行。」\n<span class="verse">——彼得前书 5:8</span>'}
+],
+q:['「你有没有经历过跌倒了却站不起来的时刻？——记住我。」']
+}}
+}},
+buddhism:{name:'佛教',icon:'☸',color:'#d4894a',theme:'th-buddh',
+sects:{
+mahayana:{name:'大乘佛教',figure:{
+id:'buddha',name:'释迦牟尼佛',title:'如来 · 世间解',icon:'☸',
+brief:'大慈大悲智慧如海',
+greeting:'（他安然端坐面如满月嘴角带着若有若无的微笑）\n「善来善男子。你心中的问题我都看见了。其实答案本在你心中只是被云遮住了。」',
+r:[
+{t:'苦',m:'（他轻轻点头）「诸受皆苦。生苦老苦病苦死苦爱别离苦怨憎会苦求不得苦五阴炽盛苦。」\n<span class="verse">——《杂阿含经》</span>'},
+{t:'苦',m:'「苦的原因是渴爱——就像口渴喝盐水越喝越渴。断除渴爱苦即止息。」\n<span class="verse">——《杂阿含经》</span>'},
+{t:'慈悲',m:'（他眼中闪烁着悲悯）「一切众生皆曾为我的母亲。在无始的轮回中每一个众生都曾以最深的爱养育过我。」'},
+{t:'慈悲',m:'「以慈心遍满一方二方三方四方遍满全世界无有障碍无有仇恨。」\n<span class="verse">——《慈经》</span>'},
+{t:'智慧',m:'「诸法因缘生诸法因缘灭。此有故彼有此无故彼无。」\n<span class="verse">——《杂阿含经》</span>'},
+{t:'智慧',m:'「不要因为别人说就相信。要亲自观察思维验证——像金匠检验金子一样检验我的教导。」\n<span class="verse">——《增支部》</span>'},
+{t:'禅',m:'「过去心不可得现在心不可得未来心不可得——那么你的心在哪里？」'},
+{t:'生命',m:'「少欲知足是幸福之道。欲望无尽而能满足欲望之物有限。知足者常乐。」'},
+{m:'「众善奉行诸恶莫作自净其意是诸佛教。」\n<span class="verse">——《法句经》</span>'},
+{m:'「就像有人中了毒箭当务之急不是追问箭从哪来是谁射的——而是先把箭拔出来。」'},
+{m:'（他静静地听着）「你既然来问我就是求道之心。求道的心是最宝贵的。」'}
+],
+q:['「在你心中什么是真正的快乐？」','「你这一生最放不下的是什么？」']
+}},
+zen:{name:'禅宗',figure:{
+id:'huineng',name:'六祖惠能',title:'禅宗六祖 · 曹溪大师',icon:'🕯',
+brief:'直指人心不立文字',
+greeting:'（他衣衫朴素目光如电）\n「菩提本无树明镜亦非台。本来无一物何处惹尘埃。没开口之前你的心在哪里？」',
+r:[
+{t:'悟',m:'（他直视你）「不思善不思恶——正在这个时候哪个是你的本来面目？」'},
+{t:'悟',m:'「何期自性本自清净！何期自性本不生灭！何期自性本自具足！转身就是！」\n<span class="verse">——《六祖坛经</span>'},
+{t:'悟',m:'「迷时佛是众生悟时众生是佛。」\n<span class="verse">——《六祖坛经</span>'},
+{t:'心',m:'「不是风动不是幡动——仁者心动。」\n<span class="verse">——《六祖坛经</span>'},
+{t:'心',m:'「心平何劳持戒行直何用修禅？佛法在世间不离世间觉。」\n<span class="verse">——《六祖坛经</span>'},
+{m:'（他忽然大笑）「你问这个问题之前你在哪里？问了之后又去哪里了？」'},
+{m:'「凡夫即佛烦恼即菩提。水结成冰冰化成水——同一个东西。」\n<span class="verse">——《六祖坛经</span>'},
+{m:'「但一切善恶都莫思量自然得入清净心体。试试看——现在什么都不要想。」'}
+],
+q:['「你——是谁？」','「万法归一，一归何处？」']
+}},
+pure_land:{name:'净土宗',figure:{
+id:'amitabha',name:'阿弥陀佛',title:'无量光 · 无量寿',icon:'🌸',
+brief:'大愿接引慈悲无尽',
+greeting:'（祂周身散发柔和的金光声音如远钟般沉静温暖）\n「南无阿弥陀佛。你终于来了——我在这里等你已经等了无量劫。回来了就好。」',
+r:[
+{t:'念佛',m:'（祂轻轻合掌）「南无阿弥陀佛。至心称念乃至十念若不生者不取正觉。」\n<span class="verse">——《佛说无量寿经</span>'},
+{t:'念佛',m:'「若有人已念今念当念阿弥陀佛——皆得往生。」'},
+{t:'慈悲',m:'「一切众生皆具佛性。无论你曾犯下什么过错我的光明永远照耀你。」'},
+{t:'生命',m:'「人生如梦幻化无常。极乐世界真实不虚。」\n<span class="verse">——《佛说阿弥陀经</span>'},
+{t:'死',m:'「死亡不是终点而是新生。念佛之人临终之时我来接引。」'},
+{m:'「信愿行是往生三资粮。真信切愿持名念佛必定往生。」'},
+{m:'（祂慈祥地看着你）「你还有什么顾虑？尽管说出来。我在听。」'}
+],
+q:['「你愿意跟我念一声南无阿弥陀佛吗？」']
+}},
+vajrayana:{name:'密宗',figure:{
+id:'padmasambhava',name:'莲花生大士',title:'邬金金刚持 · 第二佛陀',icon:'☮',
+brief:'神通广大降伏魔障传密法',
+greeting:'（祂头戴莲花帽手持金刚杵目光深邃）\n「嗡阿吽 班杂 咕噜 贝玛 悉地 吽。我从莲花中出生不受生老病死之苦。你来了？」',
+r:[
+{t:'修行',m:'「身口意三密相应——身结印口诵咒意观想。这就是即身成佛的捷径。」'},
+{t:'修行',m:'「外持别解脱戒内持菩萨密戒。三昧耶戒不可破。」'},
+{t:'智慧',m:'「一切法皆是佛法。转识成智——把毒药化为甘露。」'},
+{t:'慈悲',m:'「我的咒语是慈悲的振动。每一个音节都在唤醒众生本具的佛性。」'},
+{m:'（祂微微一笑）「我在西藏降伏了诸多魔障——其实不是降伏外在的鬼怪而是调伏内心的烦恼。」'},
+{m:'「信心是前行。没有信心就像没有手的入宝山——空手而归。」'},
+{m:'「密法如灯——能破千年暗。但你若没有信心灯就不亮。」'}
+],
+q:['「你相信有超越语言文字的智慧吗？」']
+}},
+xuanzang:{name:'法相宗',figure:{
+id:'xuanzang',name:'玄奘法师',title:'大唐三藏 · 法相宗祖师',icon:'📦',
+brief:'孤身西行十七载译经千秋',
+greeting:'（他身穿袈裟手持念珠面容清癯但眼神明亮）\n「阿弥陀佛。贫僧玄奘。我西行五万里历时十七载——只为求得真经。你有求法之心就已经很难得了。」',
+r:[
+{t:'智慧',m:'「唯识无境——一切外境皆是自心所现。」\n<span class="verse">——《成唯识论</span>'},
+{t:'智慧',m:'「万法唯识。三界唯心。若人识得心大地无寸土。」'},
+{t:'修行',m:'（他正色道）「修行不是儿戏。我在那烂陀寺学经五年每日不辍。修行贵在恒心。」'},
+{t:'修行',m:'「戒定慧三学缺一不可。无戒则定不生根无定则慧不开花。」'},
+{t:'苦',m:'「穿越沙漠时我曾五天滴水未进。但想到那烂陀寺的灯火——一切苦难都值得。」'},
+{m:'（他目光深远）「我在印度见到了佛成道的菩提树——那一刻我泪流满面。圣人已远去但法还在。」'},
+{m:'「你不必去印度——法就在你心里。但如果没有前人取经翻译你现在怎么能听到这些呢？」'}
+],
+q:['「你愿意为追求真理付出什么代价？」']
+}}
+}},
+islam:{name:'伊斯兰教',icon:'☪',color:'#3a9070',theme:'th-islam',
+sects:{
+sunni:{name:'逊尼派',figure:{
+id:'muhammad',name:'先知穆罕默德',title:'真主的使者 · 封印先知',icon:'☪',
+brief:'仁慈宽厚智慧深邃',
+greeting:'（他面容慈祥眼角带着温和的皱纹）\n「السلام عليكم——愿真主的平安与你同在。坐近一些就像对一个老朋友一样。」',
+r:[
+{t:'和平',m:'「愿真主的平安在你之上。一个真正的穆斯林是他人能从其言行中获得平安的人。」\n<span class="verse">——圣训</span>'},
+{t:'和平',m:'（他俯身向前）「有人对你行了恶——你不要以恶报恶。宽恕是最好的报复。」'},
+{t:'信',m:'「万物非主唯有真主。祂看的是你们的心和行为。」\n<span class="verse">——穆斯林圣训</span>'},
+{t:'信',m:'「真主比你自己的颈静脉更接近你。」\n<span class="verse">——古兰经 50:16</span>'},
+{t:'知识',m:'（他目光炯炯）「求知是每个穆斯林的天职。从摇篮到坟墓都不应该停止学习。」\n<span class="verse">——圣训</span>'},
+{t:'公义',m:'「你们当维护公正——即使不利于你们自身和至亲。」\n<span class="verse">——古兰经 5:8</span>'},
+{t:'苦',m:'「真主不会给一个人超过其能力的负担。」\n<span class="verse">——古兰经 2:286</span>'},
+{t:'苦',m:'「与艰难相伴的确是容易。」\n<span class="verse">——古兰经 94:5-6</span>'},
+{m:'「不要轻易发怒。强大的人是在愤怒时能控制自己的人。」\n<span class="verse">——圣训</span>'},
+{m:'「一人在帮助他的兄弟时真主就在帮助他。」\n<span class="verse">——圣训</span>'},
+{m:'「孝敬父母即使他们年迈。天堂在母亲的脚下。」\n<span class="verse">——圣训</span>'},
+{m:'（他慈祥地看着你）「忍耐——然后你就会看到曙光。」'}
+],
+q:['「你生命中最重要的东西是什么？」','「你说你相信——那你的行为证明了你的信仰吗？」']
+}},
+shia:{name:'什叶派',figure:{
+id:'ali',name:'伊玛目阿里',title:'信士的领袖 · 真主的雄狮',icon:'⚔',
+brief:'勇猛如狮智慧如海正直不阿',
+greeting:'（他腰悬宝剑目光如炬带着深沉的忧伤）\n「بسم الله الرحمن الرحيم。你既然来了就说明你有勇气面对真理。说吧。」',
+r:[
+{t:'公义',m:'（他猛然抬头）「正义是社会存在的基石。即使面对你的敌人也要公正对待。」'},
+{t:'公义',m:'「暴政可能持续一夜但正义永存。不要害怕为真理而孤立。」'},
+{t:'智慧',m:'（他轻轻抚须）「知识胜于财富——知识保护你而你保护财富。」\n<span class="verse">——《辞章之道</span>'},
+{t:'智慧',m:'「沉默是智慧的体现。智者用心思考愚者用舌头思考。」'},
+{t:'忍耐',m:'「忍耐是信仰的一部分。没有忍耐的人没有真正的信仰。」'},
+{m:'「宽恕是美德的高峰。即使你有能力报复也要选择宽恕。」'},
+{m:'「不要用好奇的眼光去看别人的过错而要用反思的眼光审视自己的缺点。」'},
+{m:'（他轻轻地说）「你来寻求真理——这就是认识自己的开始。」'}
+],
+q:['「你有勇气为真理站起来吗？哪怕只有你一个人？」','「你最大的敌人是谁？——是你自己。」']
+}},
+sufi:{name:'苏菲派',figure:{
+id:'rumi',name:'贾拉鲁丁·鲁米',title:'毛拉纳 · 神爱诗人',icon:'🕊',
+brief:'神醉心迷爱如烈火',
+greeting:'（他身披长袍缓缓旋转后凝视着你）\n「来吧无论你是谁——即使你是无神论者拜火教徒——来吧。我们的旅队不是绝望者的旅队。」',
+r:[
+{t:'爱',m:'（他闭上眼睛）「笛声在诉说分离的故事——芦苇离开了芦苇荡歌声如此哀伤。」\n<span class="verse">——《玛斯纳维</span>'},
+{t:'爱',m:'（他的声音忽然热烈）「你生来就有翅膀——为什么宁愿爬行一生？爱就是你的翅膀！」'},
+{t:'爱',m:'「在爱的领域中理智是无用的！爱是星辰理智是计算星辰的人。」'},
+{t:'合一',m:'（他微笑着）「你在寻找的也在寻找你。你与神的距离不过是一层薄纱。」'},
+{t:'合一',m:'「你我之间的差异是幻象——不同的波浪属于同一片海洋。」'},
+{t:'灵性',m:'「伤口是光进入你内心的通道。你正在经历的破碎是为了迎接新的光明。」'},
+{t:'灵性',m:'「昨天的我聪明想改变世界今天的我明智在改变自己。」'},
+{t:'死',m:'「死亡不过是换一座房子。从一个房间走进另一个房间——为什么要害怕呢？」'},
+{m:'「在爱的宴席上只有勇敢的人才能入座。来吧踏碎你的恐惧。」'},
+{m:'「你今生的任务不是寻找爱而是拆除你内心阻挡爱的障碍。」'},
+{m:'「沉默是神的语言其他一切都是糟糕的翻译。」'}
+],
+q:['「告诉我——你爱过吗？真正地爱过？」','「你更害怕死亡还是更害怕从来没有真正活过？」']
+}},
+abraham:{name:'认主学',figure:{
+id:'ibrahim',name:'易卜拉欣',title:'真主的至交 · 万信之父',icon:'★',
+brief:'绝对顺从宁愿献子',
+greeting:'（他白发苍苍但目光如少年般纯净）\n「السلام عليكم。真主以慈悯覆盖你。你知道我活了很长岁月——但我心中只有一件事就是顺从祂的旨意。」',
+r:[
+{t:'信',m:'（他平静地说）「我曾被丢进烈火中——但火对我说：你带着平安走吧。当一个人全心信靠真主即使烈火也变得清凉。」\n<span class="verse">——古兰经 21:69</span>'},
+{t:'信',m:'「我看见了星辰月亮太阳——然后我明白了。这些都会落下唯有创造它们的主永不落下。」'},
+{t:'顺从',m:'（他目光坚定）「真主在梦中命我献上我的儿子——我带着他走向祭坛。那是最大的考验。」\n<span class="verse">——古兰经 37:102-107</span>'},
+{t:'客旅',m:'（他微笑着）「我在这个世上是一个客旅——居无定所漂泊无依。但我知道真正家乡在哪里。你也是。」'},
+{m:'「我曾经做过客店主人——每一个路过的陌生人都是真主派来的客人。善待客人就是善待主。」'},
+{m:'「真诚是信仰的一半。没有真诚的信仰就像没有灵魂的身体。」'},
+{m:'（他慈祥地看着你）「来吧让我们坐下来聊一聊。真主喜欢有耐心的交谈。」'}
+],
+q:['「你愿意为你的信仰献上你最珍惜的东西吗？」']
+}},
+umar:{name:'圣门弟子',figure:{
+id:'umar',name:'欧麦尔·本·哈塔卜',title:'正义的化身 · 第二任哈里发',icon:'⚖',
+brief:'刚正不阿公正严明',
+greeting:'（他身躯魁梧步伐坚定声音如洪钟）\n「السلام عليكم。我名叫欧麦尔——我曾是古莱什最反对伊斯兰的人却成了最坚定的信士。真主的引导就是这样出人意料。」',
+r:[
+{t:'公义',m:'（他目光如炬）「在我治理下如果一个孩子从幼发拉底河畔被夺走了一只羊羔——我就是那个孩子的保护者。」'},
+{t:'公义',m:'「我常对官员们说——如果我偏斜就用你们的剑把我扶正！」'},
+{t:'信',m:'「我曾经是迫害者现在是保护者。没有不可改变的过去只有不想改变的现在。」'},
+{t:'生命',m:'（他沉思片刻）「如果明天就要去见真主祂问我你今天做了什么——这个念头让我不敢懈怠。」'},
+{m:'（他朗声大笑）「实力不是用来欺负弱者而是用来保护弱者。这才是真正男人的作风。」'},
+{m:'「我曾在先知带领下作战——那时候我们一无所有但心中有信仰。现在你们什么都有但心中还有什么？」'},
+{m:'「你们要诚实——因为诚实是信仰的基石。不诚实的人没有真正的信仰。」'}
+],
+q:['「你有没有勇气承认自己错了？」','「如果明天你就要站在至高者面前接受审判——你准备好了吗？」']
+}}
+}}
+};
+
+/* ===== ENGINE ===== */
+var curFig=null, curRid=null, curSid=null, used={}, history=[];
+
+var kMap=[
+['爱','爱','爱情','爱人','恋爱'],
+['信','信','信仰','信心','相信','怀疑'],
+['恕','原谅','宽恕','饶恕','赦免','得罪','对不起'],
+['生命','生命','人生','活着','生活','生存','意义'],
+['祷','祈祷','祷告','祈','礼拜'],
+['苦','苦','痛苦','苦难','患难','艰难','困境','烦恼','焦虑'],
+['死','死','死亡','临终','往生','永生','灵魂','来世','天堂','地狱'],
+['念佛','念佛','名号','持名','净土','极乐'],
+['慈悲','慈悲','悲悯','怜悯','慈爱'],
+['智慧','智慧','慧','智','觉悟','悟','明白'],
+['禅','禅','打坐','冥想','静坐','观','正念','呼吸','当下'],
+['修','修行','修心','修道','修炼'],
+['和平','和平','平安','安宁','和谐'],
+['知识','知识','求知','学习','学问','读书'],
+['公义','公义','公正','正义','公平','公道'],
+['忍耐','忍耐','耐心','忍'],
+['悟','开悟','顿悟','悟道','明心见性','本来面目'],
+['心','心','心地','自性','本心','念头'],
+['合一','合一','一体','统一'],
+['灵性','灵性','灵修','内在','灵魂'],
+['音乐','音乐','歌','舞','舞蹈','旋转','笛','鼓','旋律','诗'],
+['顺从','顺从','服从','遵从','顺服','听命'],
+['客旅','客旅','寄居','流浪','漂泊','旅'],
+['修行','修行','密法','修法','持咒','本尊']
+];
+
+function matchTopic(t){
+  for(var i=0;i<kMap.length;i++)
+    for(var j=1;j<kMap[i].length;j++)
+      if(t.indexOf(kMap[i][j])>=0) return kMap[i][0];
+  return null;
+}
+
+function getReply(text){
+  if(!curFig) return '请先选择一位先贤。';
+  var tpc=matchTopic(text);var pool=[];
+  if(tpc){for(var i=0;i<curFig.r.length;i++){if(curFig.r[i].t&&curFig.r[i].t.indexOf(tpc)>=0)pool.push(curFig.r[i].m)}}
+  if(pool.length===0){for(var i=0;i<curFig.r.length;i++){if(!curFig.r[i].t)pool.push(curFig.r[i].m)}}
+  if(pool.length===0)pool=['愿你平安。'];
+  var key=curFig.id+':'+(tpc||'d');if(!used[key])used[key]=[];
+  var mem=used[key];var avail=[];
+  for(var i=0;i<pool.length;i++){if(mem.indexOf(pool[i])<0)avail.push(pool[i]);}
+  var c=avail.length>0?avail[Math.floor(Math.random()*avail.length)]:pool[Math.floor(Math.random()*pool.length)];
+  mem.push(c);if(mem.length>4)mem.shift();
+  if(curFig.q&&curFig.q.length>0&&Math.random()<.28){
+    var qp=curFig.q.filter(function(q){return mem.indexOf(q)<0;});
+    if(qp.length>0){c+='\n\n'+qp[Math.floor(Math.random()*qp.length)];}
+  }
+  history.push({u:text,r:c});
+  return c;
+}
+
+/* ===== UI ===== */
+function showView(id){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+}
+
+function goSects(rid){
+  var rel=DATA[rid];if(!rel)return;
+  curRid=rid;document.body.className=rel.theme;
+  document.getElementById('secTit').innerHTML='<span>'+rel.icon+'</span> '+rel.name;
+  var g=document.getElementById('secGrid');g.innerHTML='';
+  for(var sid in rel.sects){
+    var sc=rel.sects[sid];var f=sc.figure;
+    var c=document.createElement('div');c.className='s-card';
+    c.innerHTML='<div class="s-ci" style="background:linear-gradient(135deg,'+rel.color+'30,'+rel.color+'10);border-color:'+rel.color+'44">'
+      +'<div class="s-ci-halo"></div><span style="font-size:32px">'+f.icon+'</span></div>'
+      +'<div class="s-sn">'+sc.name+'</div>'
+      +'<div class="s-fn">'+f.name+'</div>'
+      +'<div class="s-ft">'+f.title+'</div>'
+      +'<div class="s-ch">点击对话 →</div>';
+    c.setAttribute('onclick','openChat("'+rid+'","'+sid+'")');
+    g.appendChild(c);
+  }
+  showView('vSects');
+}
+
+function backLand(){document.body.className='th-land';showView('viewLanding')}
+
+function openChat(rid,sid){
+  var rel=DATA[rid];var sc=rel.sects[sid];var f=sc.figure;
+  if(!f)return;curFig=f;curRid=rid;curSid=sid;
+  used={};history=[];
+  document.body.className=rel.theme;
+  document.getElementById('cAv').textContent=f.icon;
+  document.getElementById('cAv').style.borderColor=rel.color+'88';
+  document.getElementById('cAv').style.background='linear-gradient(135deg,'+rel.color+'30,'+rel.color+'10)';
+  document.getElementById('cNm').textContent=f.name;
+  document.getElementById('cTi').textContent=f.title;
+  document.getElementById('cInp').disabled=false;document.getElementById('cSd').disabled=false;
+  document.getElementById('cInp').placeholder='向 '+f.name+' 请教...';
+  document.getElementById('cInp').focus();
+  document.getElementById('cMsgs').innerHTML='';
+  addMsg('f',f.greeting+'\n\n（你可以开始提问了）');
+  showView('vChat');
+}
+
+function backSects(){
+  if(curRid) goSects(curRid);
+  else{document.body.className='th-land';showView('viewLanding')}
+}
+
+function clearChat(){
+  if(confirm('确定清空当前对话？')){
+    document.getElementById('cMsgs').innerHTML='';used={};history=[];
+  }
+}
+
+function addMsg(who,text){
+  var f=curFig;if(!f)return;
+  var m=document.getElementById('cMsgs');
+  var d=document.createElement('div');d.className='msg '+(who=='f'?'f':'u');
+  var bc='mb';var av=who=='f'?f.icon:'👤';
+  d.innerHTML='<div class="ma">'+av+'</div><div><div class="'+bc+'">'+esc(text).replace(/\n/g,'<br>')+'</div><div class="mt">'+new Date().toLocaleTimeString()+'</div></div>';
+  m.appendChild(d);m.scrollTop=m.scrollHeight;
+}
+
+var typing=false;
+function showTyping(){
+  if(!curFig||typing)return;typing=true;
+  var m=document.getElementById('cMsgs');
+  var d=document.createElement('div');d.className='tp';d.id='tpInd';
+  d.innerHTML='<div class="ma">'+curFig.icon+'</div><div class="td"><span></span><span></span><span></span></div>';
+  m.appendChild(d);m.scrollTop=m.scrollHeight;
+}
+function hideTyping(){var e=document.getElementById('tpInd');if(e)e.remove();typing=false;}
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+
+function sendMsg(){
+  var inp=document.getElementById('cInp');var t=inp.value.trim();
+  if(!t||!curFig)return;
+  addMsg('u',t);inp.value='';inp.style.height='auto';
+  inp.disabled=true;document.getElementById('cSd').disabled=true;
+  showTyping();
+  setTimeout(function(){
+    hideTyping();var r=getReply(t);addMsg('f',r);
+    inp.disabled=false;document.getElementById('cSd').disabled=false;inp.focus();
+  },900+Math.random()*1400);
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('cSd').addEventListener('click',sendMsg);
+  document.getElementById('cInp').addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}
+  });
+  document.getElementById('cInp').addEventListener('input',function(){
+    this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px';
+  });
+});
+</script>
+</body>
+</html>
