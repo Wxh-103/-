@@ -636,8 +636,8 @@ function openChat(rid,sid){
   document.getElementById('cMsgs').innerHTML='';
   clearSuggestions();
   var greet=f.greeting+'\n\n（你可以开始提问了）';
-  try{typeMsg(greet,function(){showSuggestions();document.getElementById('cInp').focus();});}
-  catch(e){addMsgFigure(greet);showSuggestions();document.getElementById('cInp').focus();}
+  try{typeMsg(greet,function(){showSuggestions();suggestChips();document.getElementById('cInp').focus();});}
+  catch(e){addMsgFigure(greet);showSuggestions();suggestChips();document.getElementById('cInp').focus();}
   showView('vChat');
 }
 
@@ -741,6 +741,7 @@ function sendMsg(){
       hideTyping();var r=getReply(t);
       addMsgFigure(r);
       showSuggestions();
+      suggestChips();
     }catch(e){addMsgFigure('愿你平安。');}
     inp.disabled=false;document.getElementById('cSd').disabled=false;inp.focus();
   },delay);
@@ -852,89 +853,6 @@ var DQ=[
   '\u201C你们是世上的光。城造在山上是不能隐藏的。\u201D \u2014\u2014 耶稣基督'
 ];
 
-// Enhanced addMsg with typewriter
-function addMsg(who,text,instant){
-  var f=curFig;if(!f)return;
-  var m=document.getElementById('cMsgs');
-  var d=document.createElement('div');d.className='msg '+(who==='f'?'f':'u');
-  var av=who==='f'?f.icon:'👤';
-  var timeStr=new Date().toLocaleTimeString();
-  if(who==='u'||instant){
-    var displayText=who==='u'?esc(text).replace(/\n/g,'<br>'):text.replace(/\n/g,'<br>');
-    d.innerHTML='<div class="ma">'+av+'</div><div><div class="mb">'+displayText+'</div><div class="mt">'+timeStr+'</div></div>';
-    m.appendChild(d);m.scrollTop=m.scrollHeight;
-    if(who==='f')suggestChips();
-    return;
-  }
-  // Figure response: use addMsgFigure directly (reliable)
-  addMsgFigure(text);
-  suggestChips();
-}
-
-// Enhanced getReply with context memory
-function getReply(text){
-  if(!curFig)return '';
-  var tpc=matchTopic(text);var pool=[];
-  if(tpc){for(var i=0;i<curFig.r.length;i++){if(curFig.r[i].t&&curFig.r[i].t.indexOf(tpc)>=0)pool.push(curFig.r[i].m)}}
-  if(pool.length===0){for(var i=0;i<curFig.r.length;i++){if(!curFig.r[i].t)pool.push(curFig.r[i].m)}}
-  if(pool.length===0)pool=['愿你平安。'];
-  var key=curFig.id+':'+(tpc||'d');if(!used[key])used[key]=[];
-  var mem=used[key];var avail=[];
-  for(var i=0;i<pool.length;i++){if(mem.indexOf(pool[i])<0)avail.push(pool[i]);}
-  var c=avail.length>0?avail[Math.floor(Math.random()*avail.length)]:pool[Math.floor(Math.random()*pool.length)];
-  mem.push(c);if(mem.length>4)mem.shift();
-  // Context memory: 15% chance to reference previous topic
-  if(history.length>1&&Math.random()<0.15){
-    var prev=history[history.length-2];
-    var prevTopic=matchTopic(prev.u);
-    if(prevTopic){c='（你刚才提到「'+prevTopic+'」，现在又问起这个...）\n'+c;}
-  }
-  // Questions: 28% chance
-  if(curFig.q&&curFig.q.length>0&&Math.random()<0.28){
-    var qp=curFig.q.filter(function(q){return mem.indexOf(q)<0;});
-    if(qp.length>0){c+='\n\n'+qp[Math.floor(Math.random()*qp.length)];}
-  }
-  history.push({u:text,r:c,topic:tpc});
-  return c;
-}
-
-// Enhanced sendMsg (with error recovery)
-function sendMsg(){
-  var inp=document.getElementById('cInp');var t=inp.value.trim();
-  if(!t||!curFig)return;
-  addMsg('u',t);inp.value='';inp.style.height='auto';
-  inp.disabled=true;document.getElementById('cSd').disabled=true;
-  showTyping();
-  setTimeout(function(){
-    try{
-      hideTyping();var r=getReply(t);
-      if(r){addMsg('f',r);}else{addMsgFigure('愿你平安。');}
-    }catch(e){
-      hideTyping();addMsgFigure('愿你平安。');
-    }
-    inp.disabled=false;document.getElementById('cSd').disabled=false;inp.focus();
-  },900+Math.random()*1400);
-}
-
-// Override openChat for i18n and instant greeting
-function openChat(rid,sid){
-  var rel=DATA[rid];var sc=rel.sects[sid];var f=sc.figure;
-  if(!f)return;curFig=f;curRid=rid;curSid=sid;
-  used={};history=[];
-  document.body.className=rel.theme;
-  document.getElementById('cAv').textContent=f.icon;
-  document.getElementById('cAv').style.borderColor=rel.color+'88';
-  document.getElementById('cAv').style.background='linear-gradient(135deg,'+rel.color+'30,'+rel.color+'10)';
-  document.getElementById('cNm').textContent=f.name;
-  document.getElementById('cTi').textContent=f.title;
-  document.getElementById('cInp').disabled=false;document.getElementById('cSd').disabled=false;
-  document.getElementById('cInp').placeholder=LANG==='zh'?'向 '+f.name+' 请教...':'Ask '+f.name+'...';
-  document.getElementById('cInp').focus();
-  document.getElementById('cMsgs').innerHTML='';
-  addMsg('f',f.greeting+'\n\n（'+t('greet')+'）',true);
-  showView('vChat');
-}
-
 // Share
 function copyChat(){
   var msgs=document.querySelectorAll('.msg');
@@ -971,13 +889,6 @@ function suggestChips(){
   })(qs[i]);}
   document.getElementById('cMsgs').appendChild(sg);
   document.getElementById('cMsgs').scrollTop=document.getElementById('cMsgs').scrollHeight;
-}
-
-// Override clearChat
-function clearChat(){
-  if(confirm(LANG==='zh'?'确定清空当前对话？':'Clear current chat?')){
-    document.getElementById('cMsgs').innerHTML='';used={};history=[];
-  }
 }
 
 // Init: daily quote + i18n
