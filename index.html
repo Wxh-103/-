@@ -917,7 +917,7 @@ function getReply(text){
   return c;
 }
 
-// Enhanced sendMsg
+// Enhanced sendMsg (with error recovery)
 function sendMsg(){
   var inp=document.getElementById('cInp');var t=inp.value.trim();
   if(!t||!curFig)return;
@@ -925,7 +925,12 @@ function sendMsg(){
   inp.disabled=true;document.getElementById('cSd').disabled=true;
   showTyping();
   setTimeout(function(){
-    hideTyping();var r=getReply(t);addMsg('f',r);
+    try{
+      hideTyping();var r=getReply(t);
+      if(r){addMsg('f',r);}else{addMsgFigure('愿你平安。');}
+    }catch(e){
+      hideTyping();addMsgFigure('愿你平安。');
+    }
     inp.disabled=false;document.getElementById('cSd').disabled=false;inp.focus();
   },900+Math.random()*1400);
 }
